@@ -1,7 +1,133 @@
 Basic:
-Retrieve the total number of orders placed.
-Calculate the total revenue generated from pizza sales.
-Identify the highest-priced pizza.
-Identify the most common pizza size ordered.
-List the top 5 most ordered pizza types along with their quantities.
-Join the necessary tables to find the total quantity of each pizza category ordered.
+create database pizzahut;
+SELECT 
+    *
+FROM
+    pizzahut.pizzas;
+SELECT 
+    *
+FROM
+    pizzahut.pizza_types;
+USE pizzahut;
+CREATE TABLE orders (
+    order_id INT NOT NULL,
+    order_date DATE NOT NULL,
+    order_time TIME NOT NULL,
+    PRIMARY KEY (order_id)
+);
+SELECT 
+    *
+FROM
+    pizzahut.orders;
+
+use pizzahut;
+CREATE TABLE order_detail (
+    order_details_id INT NOT NULL,
+    order_id INT NOT NULL,
+    pizza_id TEXT NOT NULL,
+    quantity INT NOT NULL,
+    PRIMARY KEY (order_details_id)
+);
+SELECT 
+    *
+FROM
+    pizzahut.order_detail;
+
+
+
+
+--------------------Retrieve the total number of orders placed.--------------------
+SELECT 
+    COUNT(order_id)
+FROM
+    pizzahut.orders;
+
+
+
+
+
+--------------------Calculate the total revenue generated from pizza sales.--------------------
+SELECT 
+    ROUND(SUM(order_detail.quantity * pizzas.price),
+            2) AS total_sales
+FROM
+    order_detail
+        JOIN
+    pizzas ON pizzas.pizza_id = order_detail.pizza_id;
+
+
+
+
+
+--------------------Calculate the highest priced pizza--------------------
+SELECT 
+    pizza_types.name, pizzas.price
+FROM
+    pizza_types
+        JOIN
+    pizzas ON pizza_types.pizza_type_id = pizzas.pizza_type_id
+ORDER BY pizzas.price DESC
+LIMIT 1;
+
+
+
+
+
+--------------------Identify the second  highest-priced pizza.--------------------
+SELECT 
+    pizza_types.name, pizzas.price
+FROM
+    pizza_types
+        JOIN
+    pizzas ON pizza_types.pizza_type_id = pizzas.pizza_type_id
+ORDER BY pizzas.price DESC
+LIMIT 1 OFFSET 1;
+
+
+
+
+
+--------------------Identify the most common pizza size ordered.--------------------
+SELECT 
+    pizzas.size, count(order_detail.order_details_id) AS order_count
+FROM
+    pizzas
+        JOIN
+    order_detail ON pizzas.pizza_id = order_detail.pizza_id
+    GROUP BY pizzas.size
+ORDER BY order_count DESC
+LIMIT 1;
+
+
+
+
+
+--------------------List the top 5 most ordered pizza types along with their quantities.--------------------
+SELECT 
+    pizza_types.name, SUM(order_detail.quantity) as quantities
+FROM
+    pizza_types
+        JOIN
+    pizzas ON pizza_types.pizza_type_id = pizzas.pizza_type_id
+        JOIN
+    order_detail ON order_detail.pizza_id = pizzas.pizza_id
+GROUP BY pizza_types.name
+ORDER BY quantities DESC
+LIMIT 5;
+
+
+
+
+
+--------------------Join the necessary tables to find the total quantity of each pizza category ordered.--------------------
+SELECT 
+    pizza_types.category,
+    SUM(order_detail.quantity) AS quantities
+FROM
+    pizza_types
+        JOIN
+    pizzas ON pizza_types.pizza_type_id = pizzas.pizza_type_id
+        JOIN
+    order_detail ON order_detail.pizza_id = pizzas.pizza_id
+GROUP BY pizza_types.category
+ORDER BY quantities DESC;
